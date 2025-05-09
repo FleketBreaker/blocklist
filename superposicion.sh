@@ -5,6 +5,19 @@ ADGUARD="adguard.txt"
 HAGEZI="hagezi.txt"
 OISD="oisd.txt"
 
+# URLs oficiales de las listas
+URL_ADGUARD="https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt"
+URL_HAGEZI="https://adguardteam.github.io/HostlistsRegistry/assets/filter_49.txt"
+URL_OISD="https://big.oisd.nl/"
+
+echo "🌐 Descargando listas de bloqueo..."
+
+curl -s "$URL_ADGUARD" -o "$ADGUARD"
+curl -s "$URL_HAGEZI" -o "$HAGEZI"
+curl -s "$URL_OISD"   -o "$OISD"
+
+echo "✅ Descarga completa."
+
 # Archivos de salida limpiados
 ADG_CLEAN="adg_clean.txt"
 HGZ_CLEAN="hgz_clean.txt"
@@ -82,4 +95,27 @@ cat "$ADGUARD" "$HAGEZI" "$OISD" | \
   grep -vE '^\s*$' | \
   sort -u > lista_unificada_raw.txt
 
+# Agregar una línea al final para garantizar cambio en cada ejecución
+echo "# Última actualización: $(date)" >> lista_unificada_raw.txt
+
 echo "✅ lista_unificada_raw.txt generada con $(wc -l < lista_unificada_raw.txt) líneas únicas."
+
+# Auto-subida a GitHub
+echo ""
+echo "🚀 Subiendo lista actualizada a GitHub..."
+
+cd "$(dirname "$0")"
+
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  git add lista_unificada_raw.txt
+
+  if git diff --cached --quiet; then
+    echo "ℹ️  No hay cambios nuevos para subir."
+  else
+    git commit -m "🔄 Actualización automática de lista unificada ($(date +'%Y-%m-%d %H:%M'))"
+    git push
+    echo "✅ Cambios subidos correctamente."
+  fi
+else
+  echo "❌ Este script no está dentro de un repositorio Git. Abortando push."
+fi
