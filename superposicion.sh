@@ -66,9 +66,9 @@ echo -n "🧩 En las 3 listas: "
 comm -12 /tmp/adg_hgz.txt "$OISD_CLEAN" | tee /tmp/tres_listas.txt | wc -l
 
 # Mostrar algunos ejemplos concretos
-echo ""
-echo "📌 Ejemplos de dominios presentes en las 3 listas:"
-head -n 10 /tmp/tres_listas.txt
+# echo ""
+# echo "📌 Ejemplos de dominios presentes en las 3 listas:"
+# head -n 10 /tmp/tres_listas.txt
 
 # Limpieza opcional
 rm /tmp/adg_hgz.txt /tmp/adg_oisd.txt /tmp/hgz_oisd.txt 2>/dev/null
