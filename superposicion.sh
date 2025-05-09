@@ -105,7 +105,57 @@ echo "# Última actualización: $(date)" >> lista_unificada_raw.txt
 
 echo "✅ lista_unificada_raw.txt generada con $(wc -l < lista_unificada_raw.txt) líneas únicas."
 
-# Auto-subida a GitHub
+# ===========================
+# 🔍 COMPARACIÓN CON VERSIÓN REMOTA Y LOG
+# ===========================
+
+echo ""
+echo "📊 Comparando con la versión publicada en GitHub..."
+
+# Crear carpeta de logs si no existe
+mkdir -p logs
+
+# Timestamp para el log
+timestamp=$(date "+%Y-%m-%d_%H-%M-%S")
+log_file="logs/corrida_$timestamp.log"
+
+# Descargar versión remota de la lista
+remote_url="https://raw.githubusercontent.com/FleketBreaker/blocklist/main/lista_unificada_raw.txt"
+curl -s "$remote_url" -o lista_unificada_remota.txt
+
+# Verificar que la descarga fue exitosa
+if [ ! -s lista_unificada_remota.txt ]; then
+  echo "❌ ERROR: No se pudo descargar la versión remota desde GitHub." | tee -a "$log_file"
+  exit 1
+fi
+
+# Ordenar ambas listas para comparación
+grep -v '^# Última actualización:' lista_unificada_remota.txt | sort -u > .old_sorted.txt
+grep -v '^# Última actualización:' lista_unificada_raw.txt | sort -u > .new_sorted.txt
+
+# Comparar líneas
+added=$(comm -13 .old_sorted.txt .new_sorted.txt | wc -l)
+removed=$(comm -23 .old_sorted.txt .new_sorted.txt | wc -l)
+
+echo ""
+echo "📈 Cambios detectados:"
+echo "➕ $added registros agregados"
+echo "➖ $removed registros eliminados"
+
+# Guardar en log
+log_line() {
+  echo "$1" | tee -a "$log_file"
+}
+
+log_line "Fecha y hora de la corrida: $(date)"
+log_line "Registros agregados: $added"
+log_line "Registros eliminados: $removed"
+
+
+# ===========================
+# 🚀 GIT PUSH FINAL
+# ===========================
+
 echo ""
 echo "🚀 Subiendo lista actualizada a GitHub..."
 
@@ -115,12 +165,21 @@ if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   git add lista_unificada_raw.txt
 
   if git diff --cached --quiet; then
-    echo "ℹ️  No hay cambios nuevos para subir."
+    echo "ℹ️  No hay cambios nuevos para subir." | tee -a "$log_file"
+    echo "----------------------------------------" >> "$log_file"
   else
     git commit -m "🔄 Actualización automática de lista unificada ($(date +'%Y-%m-%d %H:%M'))"
-    git push
-    echo "✅ Cambios subidos correctamente."
+    if git push; then
+      echo "✅ Cambios subidos correctamente." | tee -a "$log_file"
+    else
+      echo "❌ Error al subir los cambios a GitHub." | tee -a "$log_file"
+    fi
+    echo "----------------------------------------" >> "$log_file"
   fi
 else
-  echo "❌ Este script no está dentro de un repositorio Git. Abortando push."
+  echo "❌ Este script no está dentro de un repositorio Git válido." | tee -a "$log_file"
+  echo "----------------------------------------" >> "$log_file"
 fi
+
+# Limpieza de archivos temporales
+rm -f .old_sorted.txt .new_sorted.txt lista_unificada_remota.txt
