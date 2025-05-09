@@ -5,9 +5,14 @@ ADGUARD="adguard.txt"
 HAGEZI="hagezi.txt"
 OISD="oisd.txt"
 
+#Hagezi tiene 3 links en caso de que uno no funcione, si el que se esta usando se cae, usar otro.
+#https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/pro.plus.txt
+#https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/pro.plus.txt
+#https://gitlab.com/hagezi/mirror/-/raw/main/dns-blocklists/adblock/pro.plus.txt
+
 # URLs oficiales de las listas
 URL_ADGUARD="https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt"
-URL_HAGEZI="https://adguardteam.github.io/HostlistsRegistry/assets/filter_49.txt"
+URL_HAGEZI="https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/pro.plus.txt"
 URL_OISD="https://big.oisd.nl/"
 
 echo "🌐 Descargando listas de bloqueo..."
